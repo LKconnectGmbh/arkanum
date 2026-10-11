@@ -625,8 +625,33 @@ export function applyMut(st: GameState, action: Action): GameEvent[] {
   return ev;
 }
 
+const cloneCards = (a: CardInst[]) => a.map((c) => ({ uid: c.uid, id: c.id }));
+const cloneEnemies = (a: EnemyInst[]) => a.map((e) => ({ ...e }));
+
+/** Schnelle tiefe Kopie des Spielstands (deutlich schneller als JSON). */
 export function cloneState(st: GameState): GameState {
-  return JSON.parse(JSON.stringify(st)) as GameState;
+  return {
+    ...st,
+    cursor: st.cursor ? { ...st.cursor } : null,
+    pending: st.pending ? { ...st.pending } : null,
+    deck: cloneCards(st.deck),
+    hand: cloneCards(st.hand),
+    played: cloneCards(st.played),
+    discard: cloneCards(st.discard),
+    banished: cloneCards(st.banished),
+    market: cloneCards(st.market),
+    marketPile: cloneCards(st.marketPile),
+    marketGone: cloneCards(st.marketGone),
+    omenPile: st.omenPile.slice(),
+    omenDiscard: st.omenDiscard.slice(),
+    omenAll: st.omenAll.slice(),
+    queue: cloneEnemies(st.queue),
+    active: cloneEnemies(st.active),
+    boss: st.boss ? { ...st.boss } : null,
+    defeated: cloneEnemies(st.defeated),
+    typeCounts: { ...st.typeCounts },
+    perTypeBonus: st.perTypeBonus.map((b) => ({ ...b })),
+  };
 }
 
 /** Reine Funktion: verändert den übergebenen Zustand nicht. */

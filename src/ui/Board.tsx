@@ -9,6 +9,9 @@ import { describeEvents } from './format';
 import { Sym } from './icons';
 import { Sheet } from './Sheet';
 import type { Game } from './store';
+import { ChanceBadge, ChanceCurve, ChanceSettings } from './Chance';
+import { useWinChance } from './useWinChance';
+import { effectiveChanceMode, type ChanceMode } from './settings';
 
 type SheetState =
   | { kind: 'hand'; uid: number }
@@ -24,6 +27,7 @@ type SheetState =
   | { kind: 'rules' }
   | { kind: 'newgame' }
   | { kind: 'endwarn'; reasons: string[] }
+  | { kind: 'chance' }
   | { kind: 'over' };
 
 const START_EVENTS = new Set<GameEvent['type']>([
@@ -38,8 +42,20 @@ function sortCards(cards: CardInst[]): CardInst[] {
   });
 }
 
-export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => void; chanceSlot?: ReactNode }) {
+export function Board({
+  game,
+  onQuit,
+  chanceMode,
+  onChanceMode,
+}: {
+  game: Game;
+  onQuit: () => void;
+  chanceMode: ChanceMode;
+  onChanceMode: (m: ChanceMode) => void;
+}) {
   const st = game.state;
+  const chanceView = effectiveChanceMode(chanceMode, st.difficulty);
+  const chanceStatus = useWinChance(game, true);
   const [sheet, setSheet] = useState<SheetState | null>(null);
   const [choicePick, setChoicePick] = useState<number | null>(null);
   const queueRef = useRef<SheetState[]>([]);
@@ -372,8 +388,9 @@ export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => 
       case 'menu':
         sheetNode = (
           <Sheet onClose={close} title="Arkanum" align="bottom">
-            <p className="hint">Zug {st.turn} · {d.name} · {st.stuns} Betäubungen</p>
+            <p className="hint">Zug {st.turn} · {d.name} · Leben {st.life} von {st.maxLife} · {st.stuns} Betäubungen</p>
             <button type="button" className="btn" onClick={() => setSheet({ kind: 'rules' })}>Regeln in Kürze</button>
+            <button type="button" className="btn" onClick={() => setSheet({ kind: 'chance' })}>Siegchance anzeigen: {chanceView === 'off' ? 'aus' : chanceView === 'trend' ? 'nur Trend' : 'Zahl'}</button>
             <button type="button" className="btn" onClick={() => setSheet({ kind: 'newgame' })}>Partie aufgeben, neu starten</button>
             <button type="button" className="btn" onClick={close}>Weiterspielen</button>
           </Sheet>
@@ -419,6 +436,14 @@ export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => 
           </Sheet>
         );
         break;
+      case 'chance':
+        sheetNode = (
+          <Sheet onClose={close} title="Siegchance" align="bottom">
+            <ChanceSettings mode={chanceMode} onChange={onChanceMode} lastMs={chanceStatus.lastMs} />
+            <button type="button" className="btn" onClick={close}>Schließen</button>
+          </Sheet>
+        );
+        break;
       case 'over':
         sheetNode = (
           <Sheet title={st.result === 'win' ? 'Sieg!' : 'Niederlage'} dismissible={false}>
@@ -426,7 +451,7 @@ export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => 
               {st.result === 'win' ? 'Der Namenlose Fürst ist gefallen. Mondfels ist sicher.' : 'Der dritte Ort ist voller Schatten.'}
             </p>
             <p className="hint">Zug {st.turn} · {d.name} · {st.stuns} Betäubungen · {st.defeated.length} Feinde besiegt</p>
-            {chanceSlot}
+            <ChanceCurve points={game.chance} result={st.result} />
             <button type="button" className="btn btn-primary" onClick={onQuit}>Neue Partie</button>
           </Sheet>
         );
@@ -439,13 +464,12 @@ export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => 
   return (
     <div className="board">
       <header className="zone head">
-        <span className="stat" title="Leben"><Sym kind="life" /> <b>{st.life}</b><small>/{st.maxLife}</small></span>
+        <span className="stat" title={`Leben ${st.life} von ${st.maxLife}`} aria-label={`Leben ${st.life} von ${st.maxLife}`}><Sym kind="life" /> <b>{st.life}</b></span>
         <span className="stat" title="Einfluss"><Sym kind="influence" /> <b>{st.phase === 'start' ? st.saved : st.influence}</b></span>
         <span className="stat" title="Angriff"><Sym kind="attack" /> <b>{st.attack}</b></span>
         {st.shield > 0 && <span className="stat" title="Schild"><Sym kind="shield" /> <b>{st.shield}</b></span>}
-        <span className="stat turn">Zug <b>{st.turn}</b></span>
         <span className="spacer" />
-        {chanceSlot}
+        <ChanceBadge points={game.chance} turn={st.turn} mode={chanceView} computing={chanceStatus.computing} onTap={() => setSheet({ kind: 'chance' })} />
         <button type="button" className="iconbtn" aria-label="Rückgängig" disabled={!game.canUndo} onClick={game.undo}>↶</button>
         <button type="button" className="iconbtn" aria-label="Menü" onClick={() => setSheet({ kind: 'menu' })}>☰</button>
       </header>
@@ -458,7 +482,7 @@ export function Board({ game, onQuit, chanceSlot }: { game: Game; onQuit: () => 
             <EnemyTile key={e.uid} enemy={e} isBoss={false} canAttack={acting && st.attack > 0} onTap={() => tapEnemy(e)} onLong={() => longEnemy(e)} hitThisTurn={enemiesHit.has(e.uid)} />
           ))
         )}
-        <span className="queue-note">{st.result === 'win' ? 'Der Fürst ist gefallen' : boss ? 'Endgegner' : st.queue.length ? `noch ${st.queue.length} im Feindstapel, dann der Fürst` : 'letzter Feind, dann der Fürst'}</span>
+        <span className="queue-note">Zug {st.turn} · {st.result === 'win' ? 'der Fürst ist gefallen' : boss ? 'Endgegner' : st.queue.length ? `noch ${st.queue.length} im Feindstapel, dann der Fürst` : 'letzter Feind, dann der Fürst'}</span>
       </section>
 
       <section className="zone market" aria-label="Markt">

@@ -3,13 +3,15 @@ import { DIFFICULTY } from '../engine/data';
 import type { Difficulty } from '../engine/types';
 import { Board } from './Board';
 import { loadSave, useGame } from './store';
+import { useSettings } from './settings';
 
 export function App() {
   const save = useMemo(() => loadSave(), []);
   const game = useGame(save);
+  const [settings, updateSettings] = useSettings();
 
   if (!game.state) return <StartScreen onStart={(d) => game.start(d)} />;
-  return <Board game={game} onQuit={game.abandon} />;
+  return <Board game={game} onQuit={game.abandon} chanceMode={settings.chanceMode} onChanceMode={(m) => updateSettings({ chanceMode: m })} />;
 }
 
 function StartScreen({ onStart }: { onStart: (d: Difficulty) => void }) {

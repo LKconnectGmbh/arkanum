@@ -9,6 +9,7 @@
     "preview": "vite preview --host",
     "test": "vitest run",
     "balance": "tsx tools/balance.ts",
+    "bench": "tsx tools/bench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

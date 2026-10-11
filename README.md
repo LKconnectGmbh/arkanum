@@ -13,6 +13,8 @@ npm run dev
 
 Bedienung: Antippen öffnet die Großansicht, der Knopf darunter spielt aus oder kauft. Feind antippen = 1 ⚡ zuweisen, lange drücken = so viel wie nötig; ohne ⚡ öffnet das Antippen die Feindansicht. „Rückgängig“ (↶) nimmt die letzte Aktion des Zugs zurück.
 
+**Siegchance:** Zu Beginn jedes Zugs spielt ein Web Worker 200 Partien mit dem guten Bot zu Ende und zeigt „58 % ±7 ↗“ in der Kopfleiste („solide“ = bei solider Spielweise). Antippen öffnet die Einstellung: je nach Stufe (Leicht und Normal Zahl, Schwer nur Trendpfeil), Zahl, nur Trend oder aus. Die Anzeige ändert sich bewusst nur am Zugbeginn, nicht nach Käufen, damit „Rückgängig“ kein Köder wird (`CHANCE_AFTER_BUY` in `src/ui/useWinChance.ts`). Am Partieende zeigt das Ergebnisblatt die Verlaufskurve mit dem größten Sprung. `npm run bench` misst die Rechenzeit.
+
 Entwicklungshilfe im Dev-Modus: In der Browser-Konsole spielt `__arkanum.botStep()` einen Zug mit dem guten Bot, `__arkanum.getState()` zeigt den Spielstand.
 
 ## Test
@@ -41,10 +43,12 @@ npm run preview     # dist/ lokal ausliefern
 | `src/engine/rules.ts` | Regeln v2: `apply(state, action) → { state, events }` |
 | `src/engine/rng.ts` | mulberry32, Zustand liegt im Spielstand |
 | `src/engine/bots.ts` | Bots `gut`, `teuer`, `zufall` aus der Python-Referenz |
-| `src/engine/sim.ts` | Partien zu Ende spielen, Siegchance schätzen |
+| `src/engine/sim.ts` | Partien zu Ende spielen, Siegchance schätzen (verdeckte Information wird neu gemischt) |
+| `src/engine/sim.worker.ts` | Web Worker für die Live-Siegchance, liefert in zwei Hälften |
 | `src/data/*.json` | Karten, Feinde, Omen, Orte, Stufen als Daten |
 | `src/ui/` | Oberfläche (React) |
 | `tools/balance.ts` | Balance-Tabelle (Node) |
+| `tools/bench.ts` | Rechenzeit der Siegchance |
 | `tools/balance_sim.py` | Python-Referenz |
 
 ## Bewusste Festlegungen gegenüber der SPEC

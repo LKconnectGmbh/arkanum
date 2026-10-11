@@ -132,7 +132,7 @@ h1, h2, h3 { font-family: var(--font-titel); font-weight: 600; margin: 0; }
 .zone { min-height: 0; min-width: 0; overflow: hidden; position: relative; }
 
 /* Kopfleiste */
-.head { grid-area: head; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.head { grid-area: head; display: flex; align-items: center; gap: 8px; font-size: 14px; }
 .stat { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .stat b { font-size: 16px; }
 .stat small { opacity: 0.6; font-size: 12px; }
@@ -141,7 +141,7 @@ h1, h2, h3 { font-family: var(--font-titel); font-weight: 600; margin: 0; }
 
 /* Feinde */
 .enemies { grid-area: enemies; display: flex; gap: 8px; align-items: flex-end; padding: 14px 0 4px; }
-.queue-note { position: absolute; right: 0; top: 0; font-size: 11px; opacity: 0.6; white-space: nowrap; }
+.queue-note { position: absolute; right: 0; top: 0; font-size: 11px; opacity: 0.7; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
 
 .tile {
   position: relative; border-radius: var(--r-tile); border: 1px solid rgba(201, 162, 75, 0.35);
@@ -177,7 +177,7 @@ h1, h2, h3 { font-family: var(--font-titel); font-weight: 600; margin: 0; }
 .type-objekt .tile-stripe, .type-objekt .emblem { background: var(--objekt); }
 .type-wesen .tile-stripe, .type-wesen .emblem { background: var(--wesen); }
 .type-grund .emblem { background: var(--grund); }
-.tile-name { flex: 1 1 auto; min-width: 0; font-size: 11px; font-family: var(--font-titel); line-height: 1.1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; hyphens: manual; overflow-wrap: anywhere; min-height: 12px; }
+.tile-name { flex: 1 1 auto; min-width: 0; font-size: 11px; font-family: var(--font-titel); line-height: 1.1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; hyphens: manual; overflow-wrap: break-word; min-height: 12px; }
 .tile-fx { font-size: 13px; flex-wrap: nowrap; overflow: hidden; }
 .market-tile .coin { flex: 0 0 auto; }
 
@@ -224,7 +224,7 @@ h1, h2, h3 { font-family: var(--font-titel); font-weight: 600; margin: 0; }
 .hand-card.dim { filter: saturate(0.6) brightness(0.85); }
 .hand-card.selected { transform: translateY(-8px); box-shadow: 0 0 0 3px var(--blitz), 0 6px 12px rgba(0, 0, 0, 0.5); }
 .hc-top { display: flex; justify-content: space-between; width: 100%; align-items: center; }
-.hc-name { font-family: var(--font-titel); font-size: 11px; line-height: 1.1; width: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; hyphens: manual; overflow-wrap: anywhere; flex: 0 0 auto; }
+.hc-name { font-family: var(--font-titel); font-size: 11px; line-height: 1.1; width: 100%; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; hyphens: manual; overflow-wrap: break-word; flex: 0 0 auto; }
 .hc-fx { font-size: 13px; color: var(--tinte); flex: 0 0 auto; justify-content: center; }
 .hand-card .emblem { flex: 0 1 auto; min-height: 0; }
 .hc-fx svg[stroke] { filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.3)); }
@@ -298,3 +298,32 @@ h1, h2, h3 { font-family: var(--font-titel); font-weight: 600; margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* ---------- Siegchance ---------- */
+.chance-chip {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  min-height: 44px; min-width: 44px; padding: 2px 5px; border-radius: var(--r-tile); flex: 0 1 auto; overflow: hidden;
+  border: 1px solid rgba(201, 162, 75, 0.35); background: rgba(23, 26, 51, 0.8); color: var(--sternweiss); line-height: 1.05;
+}
+.chance-chip.computing .chance-main { opacity: 0.5; }
+.chance-main { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.chance-row { display: inline-flex; align-items: baseline; gap: 3px; }
+.chance-arrow { font-size: 13px; opacity: 0.9; }
+.chance-sub { font-size: 9px; opacity: 0.6; letter-spacing: 0.04em; }
+.chance-opts { display: flex; flex-direction: column; gap: 6px; }
+.chance-opt { flex-direction: column; align-items: flex-start; gap: 0; padding: 8px 12px; }
+.chance-opt small { opacity: 0.7; font-size: 12px; }
+.chance-opt.active { border-color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.chance-fig { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.chance-svg { width: 100%; height: auto; display: block; font-family: var(--font-text); }
+.chance-svg .grid { stroke: rgba(244, 241, 232, 0.12); stroke-width: 1; }
+.chance-svg .tick { fill: rgba(244, 241, 232, 0.6); font-size: 10px; }
+.chance-svg .line { fill: none; stroke: var(--gold); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.chance-svg .jump { fill: var(--nacht-2); stroke: var(--blitz); stroke-width: 2; }
+.chance-svg .jump-label { fill: var(--sternweiss); font-size: 11px; }
+.chance-svg .end.win { fill: var(--wesen); }
+.chance-svg .end.loss { fill: var(--leben); }
+.chance-svg .crosshair { stroke: rgba(244, 241, 232, 0.4); stroke-width: 1; stroke-dasharray: 3 3; }
+.chance-svg .hover { fill: var(--gold); stroke: var(--nacht-2); stroke-width: 2; }
+.chance-svg .tip { fill: var(--nacht); stroke: rgba(201, 162, 75, 0.5); }
+.chance-svg .tip-text { fill: var(--sternweiss); font-size: 11px; }

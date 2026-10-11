@@ -52,25 +52,29 @@ function threat(e: EnemyInst): number {
   return t;
 }
 
-function countId(st: GameState, id: string): number {
-  let n = 0;
-  for (const pool of [st.deck, st.discard, st.hand]) for (const c of pool) if (c.id === id) n++;
-  return n;
+/** Zusammensetzung von Nachziehstapel, Ablage und Hand (gespielte Karten zählen nicht, wie in der Referenz). */
+interface PoolCounts {
+  funke: number;
+  byType: Record<string, number>;
 }
-
-function countType(st: GameState, type: string): number {
-  let n = 0;
-  for (const pool of [st.deck, st.discard, st.hand]) for (const c of pool) if (cardDef(c.id).type === type) n++;
-  return n;
+function poolCounts(st: GameState): PoolCounts {
+  const pc: PoolCounts = { funke: 0, byType: { grund: 0, zauber: 0, objekt: 0, wesen: 0 } };
+  for (const pool of [st.deck, st.discard, st.hand]) {
+    for (const c of pool) {
+      if (c.id === 'funke') pc.funke++;
+      pc.byType[cardDef(c.id).type]++;
+    }
+  }
+  return pc;
 }
 
 /** Bewertung einer Marktkarte durch den guten Bot. */
-export function cardScore(st: GameState, id: string): number {
+export function cardScore(st: GameState, id: string, pc: PoolCounts = poolCounts(st)): number {
   const def = cardDef(id);
   const s = cardSummary(id);
   let v = VALUE[id] ?? 0;
   const early = st.turn <= 5;
-  if (id === 'staub') v += 0.15 * countId(st, 'funke');
+  if (id === 'staub') v += 0.15 * pc.funke;
   if (s.influence) v += 0.1 * s.influence;
   if (id === 'laeut' || id === 'bann') {
     const cap = capacity(st);
@@ -80,8 +84,10 @@ export function cardScore(st: GameState, id: string): number {
   if (early && (s.influence || s.draw)) v += 0.4;
   const need: (string | null)[] = st.active.map((e) => enemyDef(e.id).weakness);
   if (st.queue.length) need.push(enemyDef(st.queue[0].id).weakness);
-  v += 0.45 * need.filter((w) => w === def.type).length;
-  v += 0.05 * Math.min(countType(st, def.type), 6);
+  let needs = 0;
+  for (const w of need) if (w === def.type) needs++;
+  v += 0.45 * needs;
+  v += 0.05 * Math.min(pc.byType[def.type], 6);
   return v;
 }
 
@@ -161,19 +167,20 @@ function botBuy(st: GameState, policy: Policy, rng: RngState) {
       c = aff[0];
       for (const x of aff) if (cardDef(x.id).cost > cardDef(c.id).cost) c = x;
     } else {
+      const pc = poolCounts(st);
       c = aff[0];
-      let cs = cardScore(st, c.id);
+      let cs = cardScore(st, c.id, pc);
       for (const x of aff) {
-        const xs = cardScore(st, x.id);
+        const xs = cardScore(st, x.id, pc);
         if (xs > cs) {
           c = x;
           cs = xs;
         }
       }
       let bestAll = st.market[0];
-      let bs = cardScore(st, bestAll.id);
+      let bs = cardScore(st, bestAll.id, pc);
       for (const x of st.market) {
-        const xs = cardScore(st, x.id);
+        const xs = cardScore(st, x.id, pc);
         if (xs > bs) {
           bestAll = x;
           bs = xs;
