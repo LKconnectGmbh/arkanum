@@ -110,9 +110,23 @@ export interface PerTypeBonus {
   granted: number;
 }
 
+/** Feste Aufstellung für die Einführung: Reihenfolgen statt Zufall. Kartenlisten sind Ziehreihenfolgen (erste zuerst). */
+export interface ScriptedSetup {
+  deck: string[];
+  market: string[];
+  marketPile: string[];
+  queue: string[];
+  omens: string[];
+  /** Beim Neumischen der Ablage: Karten mit diesen Ids kommen in dieser Reihenfolge zuerst, der Rest danach. */
+  reshuffles: string[][];
+}
+
 export interface GameState {
   version: 1;
   difficulty: Difficulty;
+  /** Einführung: feste Reihenfolgen beim Neumischen, bis die Liste aufgebraucht ist */
+  scriptedReshuffles?: string[][];
+  tutorial?: boolean;
   seed: number;
   rng: number;
   nextUid: number;
@@ -204,7 +218,11 @@ export type GameEvent =
   | { type: 'MARKET_ROTATED'; goneUid: number; newUid: number | null }
   | { type: 'INFLUENCE_SAVED'; amount: number }
   | { type: 'GAME_OVER'; result: 'win' | 'loss' }
-  | { type: 'REJECTED'; reason: string };
+  | { type: 'REJECTED'; reason: string }
+  // Ereignisse der Oberfläche, für Einführung und Hinweise
+  | { type: 'CARD_ZOOMED'; uid: number; zone: 'hand' | 'market' | 'pile' }
+  | { type: 'CHOICE_PICKED'; uid: number | null }
+  | { type: 'SHEET_CLOSED' };
 
 export interface ApplyResult {
   state: GameState;

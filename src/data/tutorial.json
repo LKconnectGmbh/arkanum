@@ -1,0 +1,48 @@
+{
+  "difficulty": "leicht",
+  "setup": {
+    "deck": ["funke", "funke", "funke", "funke", "stab", "funke", "funke", "funke", "stab", "stab"],
+    "market": ["spiegel", "kristall", "licht", "trank", "kauz", "otter"],
+    "marketPile": [
+      "kobold", "schild", "staub", "regen", "kristall", "licht",
+      "trank", "kauz", "kristall", "spiegel", "otter", "schild", "phiole", "licht", "foliant", "kobold",
+      "laeut", "kessel", "regen", "greif", "staub", "licht", "trank", "feder", "bann", "kristall", "otter",
+      "zirkel", "phiole", "kauz", "kobold", "schild", "foliant", "laeut", "kessel", "regen", "greif", "staub",
+      "bann", "drache", "herz"
+    ],
+    "queue": ["irrlicht", "kraehe", "weber", "wolf", "schattendrache"],
+    "omens": ["pause", "pause", "pause", "pause", "fluestern", "stich", "stich", "fluestern", "finster", "stich", "fluestern", "verwirr", "stich", "fluestern", "finster", "verwirr"],
+    "reshuffles": [
+      ["licht", "stab", "funke", "funke", "funke", "kristall", "stab", "funke", "funke", "funke"],
+      ["kristall", "funke", "funke", "funke", "funke", "stab", "licht", "stab"],
+      ["staub", "funke", "funke", "funke", "funke"]
+    ]
+  },
+  "lessons": ["Karten und Kaufen", "Angreifen", "Schatten und Verbannen"],
+  "steps": [
+    { "id": "zoom", "lesson": 0, "turn": 1, "target": "hand", "text": "Tippe eine Karte an, um sie groß zu sehen.", "done": "zoomed" },
+    { "id": "playAll1", "lesson": 0, "turn": 1, "target": "playAll", "text": "Spiel alle Karten aus, um ◆ und ⚡ zu sammeln.", "done": "handEmpty" },
+    { "id": "buyKristall", "lesson": 0, "turn": 1, "target": "market:kristall", "text": "Kauf den Glimmerkristall: 3 ◆ plus 1 ◆ Aufschlag der Fluchkrähe.", "done": "bought:kristall", "feedback": "Kommt bald auf die Hand." },
+    { "id": "end1", "lesson": 0, "turn": 1, "target": "endTurn", "silent": true, "done": "turnStarted" },
+    { "id": "playAll2", "lesson": 0, "turn": 2, "target": "playAll", "silent": true, "done": "handEmpty" },
+    { "id": "buyLicht", "lesson": 0, "turn": 2, "target": "market", "text": "Kauf wieder etwas – Lichtfunke ist ein Zauber.", "done": "bought:licht", "feedback": "Kommt bald auf die Hand." },
+    { "id": "end2", "lesson": 0, "turn": 2, "target": "endTurn", "silent": true, "done": "turnStarted" },
+    { "id": "playAll3", "lesson": 1, "turn": 3, "target": "playAll", "silent": true, "done": "handEmpty" },
+    { "id": "weakness", "lesson": 1, "turn": 3, "target": "weakness:irrlicht", "text": "Zauber treffen seine Schwäche: +1 Schaden ganz von selbst.", "done": "next" },
+    { "id": "attack", "lesson": 1, "turn": 3, "target": "enemy:irrlicht", "text": "Das Irrlicht trifft dich jeden Zug. Tippe es an, um ⚡ zuzuweisen.", "done": "attackSpent" },
+    { "id": "end3", "lesson": 1, "turn": 3, "target": "endTurn", "silent": true, "done": "turnStarted" },
+    { "id": "playAll4", "lesson": 1, "turn": 4, "target": "playAll", "silent": true, "done": "handEmpty" },
+    { "id": "kill", "lesson": 1, "turn": 4, "target": "enemy:irrlicht", "text": "Besiege es – Feinde geben Belohnungen.", "done": "defeated:irrlicht", "feedback": "Belohnung: +2 ♥" },
+    { "id": "end4", "lesson": 1, "turn": 4, "target": "endTurn", "silent": true, "done": "turnStarted" },
+    { "id": "omen", "lesson": 2, "turn": 5, "target": "omen", "text": "Ein Omen legt Schatten auf den Ort. Ist der Ort voll, fällt er.", "done": "next" },
+    { "id": "playAll5", "lesson": 2, "turn": 5, "target": "playAll", "silent": true, "done": "handEmpty" },
+    { "id": "buyStaub", "lesson": 2, "turn": 5, "target": "market:staub", "text": "Verbannen wirft schwache Karten für immer raus. Kauf den Staubwedelzauber.", "done": "bought:staub" },
+    { "id": "end5", "lesson": 2, "turn": 5, "target": "endTurn", "silent": true, "done": "turnStarted" },
+    { "id": "free", "lesson": 2, "turn": 6, "target": null, "text": "Dieser Zug gehört dir. Der Staubwedelzauber kommt im nächsten.", "done": "next", "unlockAfter": true },
+    { "id": "playStaub", "lesson": 2, "turn": 7, "target": "hand:staub", "text": "Spiel den Staubwedelzauber aus.", "done": "banishPending" },
+    { "id": "pickFunke", "lesson": 2, "turn": 7, "target": "choice:funke", "text": "Verbanne jetzt einen Funkenzauber: Wähle ihn aus.", "done": "picked:funke" },
+    { "id": "banish", "lesson": 2, "turn": 7, "target": "choiceSheet", "text": "Tippe auf „Verbannen“.", "done": "choiceResolved", "feedback": "Die Karte zerfällt in Funken." },
+    { "id": "finish", "lesson": 2, "turn": 7, "target": null, "text": "Das war das Wichtigste. Spiel die Partie zu Ende.", "done": "next", "unlockAfter": true }
+  ],
+  "altarHint": "Der Altar tilgt Schatten für 4 ◆ – lieber früh als zu spät."
+}

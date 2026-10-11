@@ -8,7 +8,7 @@
 import { cardDef, enemyDef, DIFFICULTY, ENEMIES, MARKET, OMENS, STARTER, BOSS_ID } from './data';
 import { rngInt, rngNext, sample, shuffle } from './rng';
 import type {
-  Action, ApplyResult, CardInst, CardType, Difficulty, Effect, EnemyInst, GameEvent, GameState, Pending,
+  Action, ApplyResult, CardInst, CardType, Difficulty, Effect, EnemyInst, GameEvent, GameState, Pending, ScriptedSetup,
 } from './types';
 
 export const ALTAR_COST = 4;
@@ -23,7 +23,7 @@ type Ev = GameEvent[];
 
 // ---------- Aufbau ----------
 
-export function newGame(difficulty: Difficulty, seed: number, ev: GameEvent[] = []): GameState {
+export function newGame(difficulty: Difficulty, seed: number, ev: GameEvent[] = [], setup?: ScriptedSetup): GameState {
   const d = DIFFICULTY[difficulty];
   const st: GameState = {
     version: 1,
@@ -54,25 +54,40 @@ export function newGame(difficulty: Difficulty, seed: number, ev: GameEvent[] = 
   };
   const mk = (id: string): CardInst => ({ uid: st.nextUid++, id });
 
-  for (const c of STARTER) for (let i = 0; i < c.copies; i++) st.deck.push(mk(c.id));
-  shuffle(st, st.deck);
-
-  for (const c of MARKET) for (let i = 0; i < c.copies; i++) st.marketPile.push(mk(c.id));
-  shuffle(st, st.marketPile);
-  for (let i = 0; i < MARKET_SIZE; i++) st.market.push(st.marketPile.pop()!);
-
   const omen: string[] = [];
   for (const o of OMENS) for (let i = 0; i < o.copies; i++) omen.push(o.id);
   if (d.omenSwap) {
     for (let i = 0; i < omen.length; i++) if (omen[i] === d.omenSwap.from) omen[i] = d.omenSwap.to;
   }
   st.omenAll = omen;
-  st.omenPile = shuffle(st, omen.slice());
 
-  const act = (n: number) => ENEMIES.filter((e) => e.act === n);
-  const picked = [...sample(st, act(1), 2), ...sample(st, act(2), 2), ...sample(st, act(3), 1)];
-  for (const e of picked) {
-    st.queue.push({ uid: st.nextUid++, id: e.id, hp: e.hp + d.enemyHpBonus, dmg: 0, age: 0, hitTurn: 0, act: e.act });
+  if (setup) {
+    // Einführung: alles liegt in vorgegebener Reihenfolge; Stapel werden von hinten gezogen
+    st.tutorial = true;
+    st.scriptedReshuffles = setup.reshuffles.map((r) => r.slice());
+    st.deck = setup.deck.slice().reverse().map(mk);
+    st.market = setup.market.map(mk);
+    st.marketPile = setup.marketPile.slice().reverse().map(mk);
+    st.omenPile = setup.omens.slice().reverse();
+    for (const id of setup.queue) {
+      const e = enemyDef(id);
+      st.queue.push({ uid: st.nextUid++, id: e.id, hp: e.hp + d.enemyHpBonus, dmg: 0, age: 0, hitTurn: 0, act: e.act });
+    }
+  } else {
+    for (const c of STARTER) for (let i = 0; i < c.copies; i++) st.deck.push(mk(c.id));
+    shuffle(st, st.deck);
+
+    for (const c of MARKET) for (let i = 0; i < c.copies; i++) st.marketPile.push(mk(c.id));
+    shuffle(st, st.marketPile);
+    for (let i = 0; i < MARKET_SIZE; i++) st.market.push(st.marketPile.pop()!);
+
+    st.omenPile = shuffle(st, omen.slice());
+
+    const act = (n: number) => ENEMIES.filter((e) => e.act === n);
+    const picked = [...sample(st, act(1), 2), ...sample(st, act(2), 2), ...sample(st, act(3), 1)];
+    for (const e of picked) {
+      st.queue.push({ uid: st.nextUid++, id: e.id, hp: e.hp + d.enemyHpBonus, dmg: 0, age: 0, hitTurn: 0, act: e.act });
+    }
   }
   st.boss = { uid: st.nextUid++, id: BOSS_ID, hp: d.bossHp, dmg: 0, age: 0, hitTurn: 0, act: 0 };
   st.active = [st.queue.shift()!, st.queue.shift()!];
@@ -176,6 +191,16 @@ function draw(st: GameState, n: number, ev: Ev) {
       st.deck = st.discard;
       st.discard = [];
       shuffle(st, st.deck);
+      const script = st.scriptedReshuffles?.shift();
+      if (script) {
+        // Einführung: vorgegebene Karten liegen in dieser Reihenfolge oben, der Rest darunter
+        const top: CardInst[] = [];
+        for (const id of script) {
+          const idx = st.deck.findIndex((c) => c.id === id && !top.includes(c));
+          if (idx >= 0) top.push(st.deck.splice(idx, 1)[0]);
+        }
+        st.deck = [...st.deck, ...top.reverse()];
+      }
       ev.push({ type: 'DECK_RESHUFFLED' });
     }
     const c = st.deck.pop()!;

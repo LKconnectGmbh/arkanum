@@ -14,6 +14,7 @@ export function EnemyTile({
   onTap,
   onLong,
   hitThisTurn,
+  spark,
 }: {
   enemy: EnemyInst;
   isBoss: boolean;
@@ -21,6 +22,7 @@ export function EnemyTile({
   onTap: () => void;
   onLong: () => void;
   hitThisTurn: boolean;
+  spark?: boolean;
 }) {
   const def = enemyDef(enemy.id);
   const press = usePress(onTap, onLong);
@@ -30,14 +32,16 @@ export function EnemyTile({
   return (
     <button
       type="button"
-      className={`tile enemy-tile ${isBoss ? 'boss' : ''} ${canAttack ? 'targetable' : ''} ${wut ? 'wut' : ''}`}
+      className={`tile enemy-tile ${isBoss ? 'boss' : ''} ${canAttack ? 'targetable' : ''} ${wut ? 'wut' : ''} ${spark ? 'spark' : ''}`}
       aria-label={`${def.name}, ${rem} von ${enemy.hp} Leben${def.weakness ? `, Schwäche ${TYPE_LABEL[def.weakness]}` : ''}. ${def.abilityText}`}
+      data-tut={`enemy:${def.id}`}
+      data-enemy={enemy.uid}
       {...press}
     >
       <span className="et-head">
         <span className="et-name" lang="de">{displayName(def.id, def.name)}</span>
         {def.weakness && (
-          <span className="et-weak" title={`Schwäche: ${TYPE_LABEL[def.weakness]}`}>
+          <span className="et-weak" title={`Schwäche: ${TYPE_LABEL[def.weakness]}`} data-tut={`weakness:${def.id}`}>
             <TypeJewel type={def.weakness} size={18} />
           </span>
         )}

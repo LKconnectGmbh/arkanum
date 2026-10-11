@@ -26,11 +26,13 @@ export function MarketTile({
   affordable,
   cost,
   onTap,
+  uid,
 }: {
   cardId: string;
   affordable: boolean;
   cost: number;
   onTap: () => void;
+  uid?: number;
 }) {
   const def = cardDef(cardId);
   const press = usePress(onTap);
@@ -39,6 +41,8 @@ export function MarketTile({
       type="button"
       className={`tile market-tile type-${def.type} ${affordable ? 'affordable' : 'dim'}`}
       aria-label={`${def.name}, ${cost} Einfluss, ${def.text}`}
+      data-tut={`market:${def.id}`}
+      data-uid={uid}
       {...press}
     >
       <span className="tile-stripe" />
@@ -58,12 +62,17 @@ export function HandCard({
   width,
   dim,
   selected,
+  uid,
+  tut,
 }: {
   cardId: string;
   onTap: () => void;
   width: number;
   dim?: boolean;
   selected?: boolean;
+  uid?: number;
+  /** Präfix für data-tut, z. B. „hand“ oder „choice“ */
+  tut?: string;
 }) {
   const def = cardDef(cardId);
   const press = usePress(onTap);
@@ -73,6 +82,8 @@ export function HandCard({
       className={`hand-card type-${def.type} ${dim ? 'dim' : ''} ${selected ? 'selected' : ''}`}
       style={{ width, height: Math.round((width * 7) / 5) }}
       aria-label={`${def.name}, ${def.text}`}
+      data-uid={uid}
+      data-tut={tut ? `${tut}:${def.id}` : undefined}
       {...press}
     >
       <span className="hc-top">

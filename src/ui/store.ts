@@ -6,7 +6,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { apply, cloneState, newGame } from '../engine/rules';
 import { botTurn } from '../engine/bots';
 import { randomSeed } from '../engine/rng';
-import type { Action, Difficulty, GameEvent, GameState } from '../engine/types';
+import type { Action, Difficulty, GameEvent, GameState, ScriptedSetup } from '../engine/types';
 
 const SAVE_KEY = 'arkanum.save.v1';
 
@@ -53,7 +53,9 @@ export interface Game {
   dispatch: (action: Action) => GameEvent[];
   canUndo: boolean;
   undo: () => void;
-  start: (difficulty: Difficulty, seed?: number) => void;
+  start: (difficulty: Difficulty, seed?: number, setup?: ScriptedSetup) => void;
+  /** Ereignis der Oberfläche an alle Zuhörer (Einführung, Hinweise) */
+  emitUi: (event: GameEvent) => void;
   abandon: () => void;
   subscribe: (l: EventListener) => () => void;
   addChance: (p: ChancePoint) => void;
@@ -117,9 +119,9 @@ export function useGame(initial: SaveData | null): Game {
   }, []);
 
   const start = useCallback(
-    (difficulty: Difficulty, seed?: number) => {
+    (difficulty: Difficulty, seed?: number, setup?: ScriptedSetup) => {
       const events: GameEvent[] = [];
-      const st = newGame(difficulty, seed ?? randomSeed(), events);
+      const st = newGame(difficulty, seed ?? randomSeed(), events, setup);
       undoRef.current = [];
       setUndoDepth(0);
       setChance([]);
@@ -162,6 +164,12 @@ export function useGame(initial: SaveData | null): Game {
 
   const getState = useCallback(() => stateRef.current, []);
 
+  const emitUi = useCallback((event: GameEvent) => {
+    const st = stateRef.current;
+    if (!st) return;
+    for (const l of listeners.current) l([event], st);
+  }, []);
+
   const addChance = useCallback((p: ChancePoint) => {
     setChance((c) => (c.length && c[c.length - 1].turn === p.turn ? [...c.slice(0, -1), p] : [...c, p]));
   }, []);
@@ -180,8 +188,9 @@ export function useGame(initial: SaveData | null): Game {
       addChance,
       getState,
       botStep,
+      emitUi,
     }),
-    [state, lastEvents, chance, dispatch, undoDepth, undo, start, abandon, subscribe, addChance, getState, botStep],
+    [state, lastEvents, chance, dispatch, undoDepth, undo, start, abandon, subscribe, addChance, getState, botStep, emitUi],
   );
 }
 
