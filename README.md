@@ -9,7 +9,11 @@ npm install
 npm run dev
 ```
 
-`npm run dev` startet Vite mit `--host`, die Adresse fürs Handy im selben WLAN steht in der Konsole (z. B. `http://192.168.x.y:5173`).
+`npm run dev` startet Vite mit `--host`, die Adresse fürs Handy im selben WLAN steht in der Konsole (z. B. `http://192.168.x.y:5173`). Der Spielstand liegt im Browser-Speicher; die App setzt eine Partie nach dem Neustart fort.
+
+Bedienung: Antippen öffnet die Großansicht, der Knopf darunter spielt aus oder kauft. Feind antippen = 1 ⚡ zuweisen, lange drücken = so viel wie nötig; ohne ⚡ öffnet das Antippen die Feindansicht. „Rückgängig“ (↶) nimmt die letzte Aktion des Zugs zurück.
+
+Entwicklungshilfe im Dev-Modus: In der Browser-Konsole spielt `__arkanum.botStep()` einen Zug mit dem guten Bot, `__arkanum.getState()` zeigt den Spielstand.
 
 ## Test
 

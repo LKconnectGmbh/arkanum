@@ -5,7 +5,7 @@
 import { cardDef, cardSummary, enemyDef } from './data';
 import { choice, rngNext, type RngState } from './rng';
 import { ALTAR_COST, CARRY, applyMut, bossActive, buyCost, capacity, choiceCandidates, remaining } from './rules';
-import type { CardInst, EnemyInst, GameState } from './types';
+import type { Action, CardInst, EnemyInst, GameEvent, GameState } from './types';
 
 export type Policy = 'gut' | 'teuer' | 'zufall';
 export const POLICIES: Policy[] = ['gut', 'teuer', 'zufall'];
@@ -18,6 +18,13 @@ export const VALUE: Record<string, number> = {
 };
 
 const TEUER_NOTFALL = true;
+
+/** Ereignis-Sammler für Bot-Züge, die in der Oberfläche sichtbar sein sollen. */
+let collector: GameEvent[] | null = null;
+function act(st: GameState, action: Action) {
+  const ev = applyMut(st, action);
+  if (collector) collector.push(...ev);
+}
 
 /** Schwächste Handkarte: niedrigste Kosten, bei Gleichstand Funkenzauber zuerst. */
 export function worstCard(cards: CardInst[]): CardInst | null {
@@ -83,7 +90,7 @@ function resolvePending(st: GameState, policy: Policy, rng: RngState) {
     const p = st.pending;
     if (p.kind === 'discard') {
       const c = worstCard(st.hand);
-      applyMut(st, { type: 'choose', uid: c ? c.uid : null });
+      act(st, { type: 'choose', uid: c ? c.uid : null });
     } else {
       // Verbannen: Funkenzauber aus Hand, dann Ablage; der Zufallsbot überspringt jeden Kandidaten zur Hälfte
       let pick: CardInst | null = null;
@@ -93,7 +100,7 @@ function resolvePending(st: GameState, policy: Policy, rng: RngState) {
           break;
         }
       }
-      applyMut(st, { type: 'choose', uid: pick ? pick.uid : null });
+      act(st, { type: 'choose', uid: pick ? pick.uid : null });
     }
   }
 }
@@ -103,7 +110,7 @@ function botAttack(st: GameState, policy: Policy, rng: RngState) {
     if (st.active.length === 0) {
       if (!bossActive(st)) break;
       const b = st.boss!;
-      applyMut(st, { type: 'assignAttack', enemyUid: b.uid, amount: Math.min(st.attack, remaining(b)) });
+      act(st, { type: 'assignAttack', enemyUid: b.uid, amount: Math.min(st.attack, remaining(b)) });
       break;
     }
     let e: EnemyInst;
@@ -124,7 +131,7 @@ function botAttack(st: GameState, policy: Policy, rng: RngState) {
       }
     }
     const before = st.attack;
-    applyMut(st, { type: 'assignAttack', enemyUid: e.uid, amount: Math.min(st.attack, remaining(e)) });
+    act(st, { type: 'assignAttack', enemyUid: e.uid, amount: Math.min(st.attack, remaining(e)) });
     if (st.attack === before) break;
   }
 }
@@ -133,11 +140,11 @@ function botAltar(st: GameState, policy: Policy, rng: RngState) {
   if (st.phase !== 'action') return;
   const cap = capacity(st);
   if (policy === 'gut') {
-    if (st.influence >= ALTAR_COST && st.shadow > 0 && st.shadow >= cap - 2) applyMut(st, { type: 'useAltar' });
+    if (st.influence >= ALTAR_COST && st.shadow > 0 && st.shadow >= cap - 2) act(st, { type: 'useAltar' });
   } else if (policy === 'teuer' && TEUER_NOTFALL) {
-    if (st.influence >= ALTAR_COST && st.shadow >= cap - 1) applyMut(st, { type: 'useAltar' });
+    if (st.influence >= ALTAR_COST && st.shadow >= cap - 1) act(st, { type: 'useAltar' });
   } else if (policy === 'zufall') {
-    if (st.influence >= ALTAR_COST && st.shadow > 0 && rngNext(rng) < 0.3) applyMut(st, { type: 'useAltar' });
+    if (st.influence >= ALTAR_COST && st.shadow > 0 && rngNext(rng) < 0.3) act(st, { type: 'useAltar' });
   }
 }
 
@@ -178,16 +185,25 @@ function botBuy(st: GameState, policy: Policy, rng: RngState) {
       if (cs < 1.3 && st.turn > 6) break;
     }
     const before = st.influence;
-    applyMut(st, { type: 'buy', uid: c.uid });
+    act(st, { type: 'buy', uid: c.uid });
     if (st.influence === before) break;
   }
 }
 
 /** Spielt einen kompletten Zug des Bots: Auswahl, alle Karten, Angriff, Altar, Kauf, Zugende. */
-export function botTurn(st: GameState, policy: Policy, rng: RngState) {
+export function botTurn(st: GameState, policy: Policy, rng: RngState, events?: GameEvent[]) {
+  collector = events ?? null;
+  try {
+    botTurnInner(st, policy, rng);
+  } finally {
+    collector = null;
+  }
+}
+
+function botTurnInner(st: GameState, policy: Policy, rng: RngState) {
   resolvePending(st, policy, rng);
   if (st.phase !== 'action') return;
-  applyMut(st, { type: 'playAll' });
+  act(st, { type: 'playAll' });
   resolvePending(st, policy, rng);
   if (st.phase !== 'action') return;
   botAttack(st, policy, rng);
@@ -195,7 +211,7 @@ export function botTurn(st: GameState, policy: Policy, rng: RngState) {
   botAltar(st, policy, rng);
   botBuy(st, policy, rng);
   if (st.phase !== 'action') return;
-  applyMut(st, { type: 'endTurn' });
+  act(st, { type: 'endTurn' });
 }
 
 export { buyCost };

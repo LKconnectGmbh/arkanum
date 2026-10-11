@@ -23,7 +23,7 @@ type Ev = GameEvent[];
 
 // ---------- Aufbau ----------
 
-export function newGame(difficulty: Difficulty, seed: number): GameState {
+export function newGame(difficulty: Difficulty, seed: number, ev: GameEvent[] = []): GameState {
   const d = DIFFICULTY[difficulty];
   const st: GameState = {
     version: 1,
@@ -77,8 +77,8 @@ export function newGame(difficulty: Difficulty, seed: number): GameState {
   st.boss = { uid: st.nextUid++, id: BOSS_ID, hp: d.bossHp, dmg: 0, age: 0, hitTurn: 0, act: 0 };
   st.active = [st.queue.shift()!, st.queue.shift()!];
 
-  draw(st, HAND_SIZE, []);
-  beginTurn(st, []);
+  draw(st, HAND_SIZE, ev);
+  beginTurn(st, ev);
   return st;
 }
 
