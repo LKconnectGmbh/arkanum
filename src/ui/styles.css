@@ -1,0 +1,23 @@
+:root {
+  --nacht: #0E1020;
+  --nacht-2: #171A33;
+  --sternweiss: #F4F1E8;
+  --pergament: #EFE3C4;
+  --tinte: #2A2118;
+  --gold: #C9A24B;
+  --zauber: #6E7BFF;
+  --objekt: #B8823A;
+  --wesen: #3F9A6E;
+  --blitz: #F2C14E;
+  --leben: #D9534F;
+  --schild: #8FB7D9;
+  --schatten: #7B4FA8;
+  --feind: #9E2B3A;
+}
+
+html, body {
+  margin: 0;
+  background: var(--nacht);
+  color: var(--sternweiss);
+  font-family: 'Alegreya Sans', system-ui, sans-serif;
+}

@@ -1,0 +1,14 @@
+[
+  { "id": "fluestern", "name": "Schattenflüstern", "copies": 4, "harmful": true,
+    "effects": [{ "op": "addShadow", "amount": 1 }], "text": "+1 ☾" },
+  { "id": "stich", "name": "Fluchstich", "copies": 4, "harmful": true,
+    "effects": [{ "op": "damage", "amount": 1 }], "text": "1 Schaden" },
+  { "id": "kaelte", "name": "Kältehauch", "copies": 2, "harmful": true,
+    "effects": [{ "op": "damage", "amount": 2 }], "text": "2 Schaden" },
+  { "id": "verwirr", "name": "Verwirrung", "copies": 2, "harmful": true,
+    "effects": [{ "op": "discard", "amount": 1 }], "text": "Wirf 1 Handkarte ab" },
+  { "id": "finster", "name": "Finsternis", "copies": 2, "harmful": true,
+    "effects": [{ "op": "addShadow", "amount": 1 }, { "op": "damage", "amount": 1 }], "text": "+1 ☾, 1 Schaden" },
+  { "id": "pause", "name": "Atempause", "copies": 2, "harmful": false,
+    "effects": [], "text": "keine Wirkung" }
+]

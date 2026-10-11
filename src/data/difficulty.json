@@ -1,0 +1,8 @@
+{
+  "leicht": { "name": "Leicht", "life": 12, "capacities": [4, 5, 5], "omensPerLocation": [1, 1, 1],
+              "enemyHpBonus": 0, "bossHp": 13, "omenSwap": { "from": "kaelte", "to": "pause" }, "winChance": "always" },
+  "normal": { "name": "Normal", "life": 10, "capacities": [4, 5, 5], "omensPerLocation": [1, 1, 2],
+              "enemyHpBonus": 0, "bossHp": 16, "omenSwap": null, "winChance": "toggle" },
+  "schwer": { "name": "Schwer", "life": 10, "capacities": [4, 4, 5], "omensPerLocation": [1, 1, 2],
+              "enemyHpBonus": 1, "bossHp": 16, "omenSwap": null, "winChance": "trend" }
+}
