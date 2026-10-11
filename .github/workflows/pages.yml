@@ -1,5 +1,6 @@
 # Veröffentlicht das Spiel auf GitHub Pages: https://<nutzer>.github.io/<repo>/
-# Einmalig im Repository unter Settings → Pages die Quelle „GitHub Actions“ wählen.
+# Der Schritt „configure-pages“ schaltet Pages beim ersten Lauf selbst ein. Klappt das nicht,
+# einmalig unter https://github.com/<nutzer>/<repo>/settings/pages die Quelle „GitHub Actions“ wählen.
 name: Pages
 
 on:
@@ -25,6 +26,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - run: npm ci
       - run: npm test
       - run: npm run build

@@ -47,7 +47,19 @@ npm run preview     # dist/ lokal ausliefern
 npx vercel
 ```
 
-**GitHub Pages:** Der Workflow in `.github/workflows/pages.yml` baut bei jedem Push auf `main` und veröffentlicht nach `https://<nutzer>.github.io/<repo>/`. Einmalig im Repository unter Settings → Pages als Quelle „GitHub Actions“ wählen. Der Unterpfad kommt über `VITE_BASE` in den Build.
+**GitHub Pages:** Der Workflow in `.github/workflows/pages.yml` baut bei jedem Push auf `main` und veröffentlicht nach `https://<nutzer>.github.io/<repo>/`. Er schaltet Pages beim ersten Lauf selbst ein; falls das fehlschlägt, einmalig unter `https://github.com/<nutzer>/<repo>/settings/pages` die Quelle „GitHub Actions“ wählen (geht auch im Handy-Browser). Der Unterpfad kommt über `VITE_BASE` in den Build.
+
+Einmalig vom PC aus hochladen:
+
+```bash
+gh auth login
+```
+
+```bash
+gh repo create arkanum --private --source . --push
+```
+
+Danach lässt sich alles Weitere am Handy erledigen: Der Workflow läuft von selbst, der Lauf ist in der GitHub-App unter „Actions“ sichtbar, die Adresse steht am Ende des Laufs unter „deploy“.
 
 ## Aufbau
 
